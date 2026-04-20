@@ -7,7 +7,8 @@ AI-powered research assistant that answers questions about Polycystic Ovary Synd
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
-
+#### Try it out - https://pcos-research-rag.streamlit.app/
+---
 ## Architecture
 
 ```
