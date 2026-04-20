@@ -1,0 +1,182 @@
+# 🔬 PCOS Research Assistant — RAG Pipeline
+
+AI-powered research assistant that answers questions about Polycystic Ovary Syndrome (PCOS) using evidence from 50+ published PubMed Central papers. Built with hybrid retrieval (BM25 + semantic search), Supabase pgvector, and GPT-4o-mini.
+
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.41-red)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+---
+
+## Architecture
+
+```
+User Question
+    │
+    ▼
+┌─────────────────────┐
+│   Hybrid Retrieval   │
+│                     │
+│  BM25 (keywords)    │──── Reciprocal Rank Fusion ────┐
+│  +                  │                                │
+│  Semantic (vectors) │                                ▼
+└─────────────────────┘                     Top-K Chunks
+                                                │
+    ┌───────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────┐       ┌──────────────┐
+│   Prompt Template    │──────▶│  GPT-4o-mini │
+│                     │       │              │
+│  System: Medical    │       │  Answer with │
+│  research assistant │       │  citations   │
+│  Context: {chunks}  │       └──────────────┘
+│  Question: {query}  │
+└─────────────────────┘
+```
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **LLM** | GPT-4o-mini (OpenAI) |
+| **Embeddings** | text-embedding-3-small (OpenAI) |
+| **Vector DB** | Supabase (PostgreSQL + pgvector) |
+| **Keyword Search** | BM25 (rank_bm25) |
+| **Retrieval** | Hybrid (BM25 + Semantic) with Reciprocal Rank Fusion |
+| **Data Source** | PubMed Central (BioC API) — 50+ open-access papers |
+| **Framework** | LangChain |
+| **Frontend** | Streamlit |
+| **Evaluation** | RAGAS (faithfulness, answer relevancy) |
+| **Deployment** | Railway (Docker) |
+
+## Features
+
+- **Hybrid Retrieval** — combines keyword (BM25) and semantic (vector) search for higher accuracy than either alone
+- **Source Citations** — every answer cites PMC paper IDs with links to original papers
+- **Medical Disclaimer** — built-in safeguards; never gives medical advice
+- **Section-aware** — tracks which section (RESULTS, METHODS, DISCUSSION) each chunk comes from
+- **Configurable** — adjust retrieval depth, toggle context visibility
+
+## Quickstart
+
+### 1. Clone & install
+
+```bash
+git clone https://github.com/YOUR_USERNAME/pcos-research-rag.git
+cd pcos-research-rag
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Setup Supabase
+
+- Create a free project at [supabase.com](https://supabase.com)
+- Open SQL Editor → paste and run `supabase_setup.sql`
+
+### 3. Configure environment
+
+```bash
+cp .env.example .env
+# Edit .env with your keys:
+# OPENAI_API_KEY=sk-...
+# SUPABASE_URL=https://your-project.supabase.co
+# SUPABASE_KEY=your-anon-key
+# PUBMED_EMAIL=your-email@gmail.com
+```
+
+### 4. Ingest papers (run once)
+
+```bash
+python ingest.py
+```
+
+Fetches ~50 PCOS papers from PubMed Central, chunks them, generates embeddings, and stores in Supabase. Takes ~10-15 minutes.
+
+### 5. Run the app
+
+```bash
+streamlit run app.py
+```
+
+Open `http://localhost:8501`
+
+## Example Queries
+
+- "What are the Rotterdam criteria for diagnosing PCOS?"
+- "How does insulin resistance contribute to PCOS symptoms?"
+- "What are effective treatments for PCOS-related infertility?"
+- "Does metformin help with PCOS and how?"
+- "What dietary changes improve PCOS outcomes?"
+- "What is the link between PCOS and mental health?"
+
+## Evaluation
+
+Evaluated using [RAGAS](https://docs.ragas.io) framework:
+
+| Metric | Score |
+|--------|-------|
+| Faithfulness | — |
+| Answer Relevancy | — |
+
+*(Fill in your actual scores after running evaluation)*
+
+## Deploy to Railway
+
+1. Push to GitHub
+2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
+3. Add environment variables in Railway dashboard:
+   - `OPENAI_API_KEY`
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY`
+4. Railway auto-detects `Dockerfile` and deploys
+
+## Project Structure
+
+```
+pcos-research-rag/
+├── src/
+│   ├── __init__.py
+│   ├── fetch_papers.py     # PubMed Central API fetcher
+│   ├── chunker.py          # Document chunking (500 tokens, 50 overlap)
+│   ├── vectorstore.py      # Supabase pgvector operations
+│   ├── hybrid.py           # BM25 + vector hybrid search with RRF
+│   └── rag.py              # RAG chain (retrieval + GPT-4o-mini)
+├── data/
+│   └── papers.json         # Fetched papers (generated by ingest.py)
+├── .streamlit/
+│   └── config.toml         # Streamlit theme config
+├── app.py                  # Streamlit frontend
+├── ingest.py               # One-time ingestion script
+├── supabase_setup.sql      # Database schema
+├── requirements.txt
+├── Dockerfile
+├── railway.toml
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
+## How It Works
+
+1. **Ingestion**: Papers fetched from PubMed Central → split into 500-char chunks → embedded with OpenAI → stored in Supabase pgvector
+2. **Retrieval**: User query → BM25 keyword search + semantic vector search → Reciprocal Rank Fusion combines results → top-K chunks selected
+3. **Generation**: Retrieved chunks + question fed to GPT-4o-mini with medical research system prompt → answer with PMC citations
+
+## Cost
+
+| Resource | Cost |
+|----------|------|
+| Supabase | Free (500MB tier) |
+| OpenAI embeddings (ingestion) | ~$0.50 one-time |
+| GPT-4o-mini (per query) | ~$0.01-0.05 |
+| Railway | Free trial / $5/mo |
+
+## License
+
+MIT
+
+## Disclaimer
+
+This tool is for research purposes only. It does not provide medical advice. All answers are generated from published PubMed Central papers. Consult a healthcare professional for medical decisions.
