@@ -49,7 +49,7 @@ User Question
 | **Framework** | LangChain |
 | **Frontend** | Streamlit |
 | **Evaluation** | RAGAS (faithfulness, answer relevancy) |
-| **Deployment** | Railway (Docker) |
+| **Deployment** | StreamlitCloud (Docker) |
 
 ## Features
 
@@ -64,7 +64,7 @@ User Question
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/pcos-research-rag.git
+git clone https://github.com/jpsahoo1609/pcos-research-rag.git
 cd pcos-research-rag
 python -m venv venv
 source venv/bin/activate
@@ -126,12 +126,13 @@ Evaluated using [RAGAS](https://docs.ragas.io) framework:
 ## Deploy to Railway
 
 1. Push to GitHub
-2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
-3. Add environment variables in Railway dashboard:
+2. Go to [(https://share.streamlit.io/)] → Create App → Deploy from GitHub
+3. Add secrets in app settings:
    - `OPENAI_API_KEY`
    - `SUPABASE_URL`
    - `SUPABASE_KEY`
-4. Railway auto-detects `Dockerfile` and deploys
+   - `PUBMED_EMAIL`
+4. StreamlitCloud auto-detects `Dockerfile` and deploys
 
 ## Project Structure
 
@@ -153,7 +154,6 @@ pcos-research-rag/
 ├── supabase_setup.sql      # Database schema
 ├── requirements.txt
 ├── Dockerfile
-├── railway.toml
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -172,7 +172,7 @@ pcos-research-rag/
 | Supabase | Free (500MB tier) |
 | OpenAI embeddings (ingestion) | ~$0.50 one-time |
 | GPT-4o-mini (per query) | ~$0.01-0.05 |
-| Railway | Free trial / $5/mo |
+| Streamlit Cloud | Free trial |
 
 ## License
 
