@@ -50,6 +50,7 @@ User Question
 | **Frontend** | Streamlit |
 | **Evaluation** | RAGAS (faithfulness, answer relevancy) |
 | **Deployment** | StreamlitCloud (Docker) |
+| **Backend** | Python |
 
 ## Features
 
